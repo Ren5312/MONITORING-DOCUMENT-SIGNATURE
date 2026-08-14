@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Signature Monitoring</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+    <div>
+        <h1>Document Signature Monitoring</h1>
+        <p>Monitor documents and their signature status</p>
+    </div>
+
+    <button class="add-btn" onclick="openModal()">
+        + Add Document
+    </button>
+</header>
+
+<main class="container">
+
+    <!-- DASHBOARD -->
+    <section class="dashboard">
+
+        <div class="card">
+            <h3>Total Documents</h3>
+            <strong id="totalDocuments">0</strong>
+        </div>
+
+        <div class="card">
+            <h3>Completed</h3>
+            <strong id="completedDocuments">0</strong>
+        </div>
+
+        <div class="card">
+            <h3>Pending</h3>
+            <strong id="pendingDocuments">0</strong>
+        </div>
+
+    </section>
+
+    <!-- SEARCH -->
+    <section class="toolbar">
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search document..."
+            onkeyup="displayDocuments()"
+        >
+
+    </section>
+
+    <!-- DOCUMENT TABLE -->
+    <section class="table-container">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Document</th>
+                    <th>School Year</th>
+                    <th>Semester</th>
+                    <th>Signatories</th>
+                    <th>Status</th>
+                    <th>Remarks</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="documentTable">
+            </tbody>
+
+        </table>
+
+        <div id="emptyMessage" class="empty">
+            No documents found.
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- ADD / EDIT MODAL -->
+
+<div id="documentModal" class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+
+            <h2 id="modalTitle">Add Document</h2>
+
+            <button onclick="closeModal()" class="close">
+                ×
+            </button>
+
+        </div>
+
+        <form id="documentForm">
+
+            <input type="hidden" id="documentId">
+
+            <label>Document Name</label>
+
+            <input
+                type="text"
+                id="documentName"
+                placeholder="Example: Application Form"
+                required
+            >
+
+
+            <div class="row">
+
+                <div>
+                    <label>School Year</label>
+
+                    <input
+                        type="text"
+                        id="schoolYear"
+                        placeholder="2026-2027"
+                        required
+                    >
+                </div>
+
+                <div>
+
+                    <label>Semester</label>
+
+                    <select id="semester">
+
+                        <option value="1st Semester">
+                            1st Semester
+                        </option>
+
+                        <option value="2nd Semester">
+                            2nd Semester
+                        </option>
+
+                        <option value="Summer">
+                            Summer
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <label>Signatories</label>
+
+            <div id="signatoryContainer">
+
+                <div class="signatory">
+
+                    <input
+                        type="text"
+                        placeholder="Signatory name"
+                        class="signatory-name"
+                        required
+                    >
+
+                    <label class="checkbox-label">
+
+                        <input
+                            type="checkbox"
+                            class="signatory-status"
+                        >
+
+                        Signed
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="secondary-btn"
+                onclick="addSignatory()"
+            >
+                + Add Signatory
+            </button>
+
+
+            <label>Remarks</label>
+
+            <select id="remarks">
+
+                <option value="Pending">
+                    Pending
+                </option>
+
+                <option value="Completed">
+                    Completed
+                </option>
+
+            </select>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    onclick="closeModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="save-btn"
+                >
+                    Save Document
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
