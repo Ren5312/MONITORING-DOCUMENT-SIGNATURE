@@ -1,376 +1,704 @@
+/* =====================================================
+   DOCUMENT SIGNATURE MONITORING SYSTEM
+   ===================================================== */
+
+
+/* ================= DATA ================= */
+
 let documents =
-    JSON.parse(localStorage.getItem("documents")) || [];
+    JSON.parse(
+        localStorage.getItem("documentMonitoring")
+    ) || [];
+
 
 let editingId = null;
 
 
-/* SAVE DATA */
+
+/* ================= SAVE DATA ================= */
 
 function saveData() {
 
     localStorage.setItem(
-        "documents",
+        "documentMonitoring",
         JSON.stringify(documents)
     );
 
 }
 
 
-/* OPEN MODAL */
 
-function openModal() {
+/* ================= OPEN ADD MODAL ================= */
+
+function openAddModal() {
 
     editingId = null;
 
-    document.getElementById("modalTitle").textContent =
-        "Add Document";
+    document.getElementById(
+        "modalTitle"
+    ).textContent = "Add Document";
 
-    document.getElementById("documentForm").reset();
 
-    document.getElementById("signatoryContainer").innerHTML = `
-        <div class="signatory">
+    document.getElementById(
+        "documentForm"
+    ).reset();
 
-            <input
-                type="text"
-                placeholder="Signatory name"
-                class="signatory-name"
-                required
-            >
 
-            <label class="checkbox-label">
+    document.getElementById(
+        "documentId"
+    ).value = "";
 
-                <input
-                    type="checkbox"
-                    class="signatory-status"
-                >
 
-                Signed
+    document.getElementById(
+        "signatoriesContainer"
+    ).innerHTML = "";
 
-            </label>
 
-        </div>
-    `;
+    document.getElementById(
+        "receivedContainer"
+    ).innerHTML = "";
 
-    document.getElementById("documentModal").style.display =
-        "flex";
+
+    addSignatoryField();
+
+    addReceivedField();
+
+
+    document.getElementById(
+        "documentDate"
+    ).value =
+        new Date().toISOString().split("T")[0];
+
+
+    document.getElementById(
+        "documentModal"
+    ).style.display = "flex";
+
 }
 
 
-/* CLOSE MODAL */
+
+/* ================= CLOSE MODAL ================= */
 
 function closeModal() {
 
-    document.getElementById("documentModal").style.display =
-        "none";
+    document.getElementById(
+        "documentModal"
+    ).style.display = "none";
 
 }
 
 
-/* ADD SIGNATORY */
 
-function addSignatory() {
+/* ================= ADD SIGNATORY FIELD ================= */
+
+function addSignatoryField(
+    name = "",
+    dateTime = "",
+    checked = false
+) {
 
     const container =
-        document.getElementById("signatoryContainer");
+        document.getElementById(
+            "signatoriesContainer"
+        );
 
-    const div = document.createElement("div");
 
-    div.className = "signatory";
+    const div =
+        document.createElement("div");
+
+
+    div.className =
+        "form-person";
+
 
     div.innerHTML = `
 
         <input
             type="text"
-            placeholder="Signatory name"
             class="signatory-name"
+            placeholder="Name"
+            value="${escapeHTML(name)}"
             required
         >
 
-        <label class="checkbox-label">
+        <input
+            type="datetime-local"
+            class="signatory-time"
+            value="${dateTime}"
+        >
 
-            <input
-                type="checkbox"
-                class="signatory-status"
-            >
-
-            Signed
-
-        </label>
+        <button
+            type="button"
+            class="remove-person"
+            onclick="this.parentElement.remove()"
+        >
+            ×
+        </button>
 
     `;
+
 
     container.appendChild(div);
 
 }
 
 
-/* FORM SUBMIT */
 
-document
-    .getElementById("documentForm")
-    .addEventListener("submit", function(event) {
+/* ================= ADD RECEIVED FIELD ================= */
 
-        event.preventDefault();
+function addReceivedField(
+    name = "",
+    dateTime = "",
+    checked = false
+) {
 
-        const name =
-            document.getElementById("documentName").value;
-
-        const schoolYear =
-            document.getElementById("schoolYear").value;
-
-        const semester =
-            document.getElementById("semester").value;
-
-        const remarks =
-            document.getElementById("remarks").value;
-
-
-        const names =
-            document.querySelectorAll(".signatory-name");
-
-        const statuses =
-            document.querySelectorAll(".signatory-status");
-
-
-        let signatories = [];
-
-
-        names.forEach((input, index) => {
-
-            if (input.value.trim() !== "") {
-
-                signatories.push({
-
-                    name: input.value.trim(),
-
-                    signed: statuses[index].checked
-
-                });
-
-            }
-
-        });
-
-
-        if (signatories.length === 0) {
-
-            alert("Please add at least one signatory.");
-
-            return;
-
-        }
-
-
-        const completed =
-            signatories.every(person => person.signed);
-
-
-        const documentData = {
-
-            id:
-                editingId ||
-                Date.now(),
-
-            name,
-
-            schoolYear,
-
-            semester,
-
-            signatories,
-
-            remarks:
-                completed
-                    ? "Completed"
-                    : "Pending"
-
-        };
-
-
-        if (editingId) {
-
-            const index =
-                documents.findIndex(
-                    doc => doc.id === editingId
-                );
-
-            documents[index] = documentData;
-
-        } else {
-
-            documents.push(documentData);
-
-        }
-
-
-        saveData();
-
-        displayDocuments();
-
-        closeModal();
-
-    });
-
-
-/* DISPLAY DOCUMENTS */
-
-function displayDocuments() {
-
-    const table =
-        document.getElementById("documentTable");
-
-    const search =
-        document
-            .getElementById("searchInput")
-            .value
-            .toLowerCase();
-
-
-    table.innerHTML = "";
-
-
-    const filtered =
-        documents.filter(doc =>
-            doc.name
-                .toLowerCase()
-                .includes(search)
+    const container =
+        document.getElementById(
+            "receivedContainer"
         );
 
 
-    if (filtered.length === 0) {
-
-        document.getElementById("emptyMessage")
-            .style.display = "block";
-
-    } else {
-
-        document.getElementById("emptyMessage")
-            .style.display = "none";
-
-    }
+    const div =
+        document.createElement("div");
 
 
-    filtered.forEach((doc, index) => {
-
-        const completed =
-            doc.signatories.every(
-                person => person.signed
-            );
+    div.className =
+        "form-person";
 
 
-        const signatories =
-            doc.signatories
-                .map(person => `
+    div.innerHTML = `
 
-                    <div class="signatory-item">
+        <input
+            type="text"
+            class="received-name"
+            placeholder="Name"
+            value="${escapeHTML(name)}"
+            required
+        >
 
-                        <input
-                            type="checkbox"
-                            ${person.signed ? "checked" : ""}
-                            onchange="
-                                toggleSignature(
-                                    ${doc.id},
-                                    '${escapeText(person.name)}'
-                                )
-                            "
-                        >
+        <input
+            type="datetime-local"
+            class="received-time"
+            value="${dateTime}"
+        >
 
-                        <span
-                            class="${person.signed ? "signed" : ""}"
-                        >
-                            ${escapeHTML(person.name)}
-                        </span>
+        <button
+            type="button"
+            class="remove-person"
+            onclick="this.parentElement.remove()"
+        >
+            ×
+        </button>
 
-                    </div>
-
-                `)
-                .join("");
+    `;
 
 
-        const row =
-            document.createElement("tr");
+    container.appendChild(div);
+
+}
 
 
-        row.innerHTML = `
 
-            <td>${index + 1}</td>
+/* ================= FORM SUBMIT ================= */
 
-            <td>
-                <strong>
-                    ${escapeHTML(doc.name)}
-                </strong>
-            </td>
+document
+    .getElementById("documentForm")
+    .addEventListener(
+        "submit",
+        function(event) {
 
-            <td>
-                ${escapeHTML(doc.schoolYear)}
-            </td>
+            event.preventDefault();
 
-            <td>
-                ${escapeHTML(doc.semester)}
-            </td>
 
-            <td>
+            const date =
+                document.getElementById(
+                    "documentDate"
+                ).value;
 
-                <div class="signatory-list">
 
-                    ${signatories}
+            const documentName =
+                document.getElementById(
+                    "documentName"
+                ).value.trim();
+
+
+            const trustedBy =
+                document.getElementById(
+                    "trustedBy"
+                ).value.trim();
+
+
+            const remark =
+                document.getElementById(
+                    "remark"
+                ).value;
+
+
+
+            /* ===== SIGNATORIES ===== */
+
+            const signatoryRows =
+                document.querySelectorAll(
+                    "#signatoriesContainer .form-person"
+                );
+
+
+            let signatories = [];
+
+
+            signatoryRows.forEach(row => {
+
+                const name =
+                    row.querySelector(
+                        ".signatory-name"
+                    ).value.trim();
+
+
+                const dateTime =
+                    row.querySelector(
+                        ".signatory-time"
+                    ).value;
+
+
+                if (name !== "") {
+
+                    signatories.push({
+
+                        name: name,
+
+                        dateTime: dateTime,
+
+                        signed: true
+
+                    });
+
+                }
+
+            });
+
+
+
+            /* ===== RECEIVED BY ===== */
+
+            const receivedRows =
+                document.querySelectorAll(
+                    "#receivedContainer .form-person"
+                );
+
+
+            let receivedBy = [];
+
+
+            receivedRows.forEach(row => {
+
+                const name =
+                    row.querySelector(
+                        ".received-name"
+                    ).value.trim();
+
+
+                const dateTime =
+                    row.querySelector(
+                        ".received-time"
+                    ).value;
+
+
+                if (name !== "") {
+
+                    receivedBy.push({
+
+                        name: name,
+
+                        dateTime: dateTime
+
+                    });
+
+                }
+
+            });
+
+
+
+            /* ===== CREATE DOCUMENT ===== */
+
+            const newDocument = {
+
+                id:
+                    editingId ||
+                    Date.now(),
+
+                date,
+
+                documentName,
+
+                trustedBy,
+
+                signatories,
+
+                receivedBy,
+
+                remark
+
+            };
+
+
+
+            /* ===== UPDATE ===== */
+
+            if (editingId !== null) {
+
+                const index =
+                    documents.findIndex(
+                        doc =>
+                            doc.id === editingId
+                    );
+
+
+                if (index !== -1) {
+
+                    documents[index] =
+                        newDocument;
+
+                }
+
+            }
+
+
+            /* ===== ADD ===== */
+
+            else {
+
+                documents.push(
+                    newDocument
+                );
+
+            }
+
+
+
+            saveData();
+
+            displayDocuments();
+
+            closeModal();
+
+        }
+    );
+
+
+
+/* ================= DISPLAY DOCUMENTS ================= */
+
+function displayDocuments() {
+
+    const tableBody =
+        document.getElementById(
+            "documentTableBody"
+        );
+
+
+    const search =
+        document.getElementById(
+            "searchInput"
+        ).value
+            .toLowerCase();
+
+
+    tableBody.innerHTML = "";
+
+
+    const filteredDocuments =
+        documents.filter(doc =>
+
+            doc.documentName
+                .toLowerCase()
+                .includes(search)
+
+        );
+
+
+    document.getElementById(
+        "emptyMessage"
+    ).style.display =
+        filteredDocuments.length === 0
+            ? "block"
+            : "none";
+
+
+
+    filteredDocuments.forEach(
+        (doc, index) => {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+
+            /* ===== SIGNATORIES HTML ===== */
+
+            let signatoriesHTML = `
+
+                <div class="people-header">
+
+                    <span></span>
+
+                    <span>NAME</span>
+
+                    <span>DATE & TIME</span>
 
                 </div>
 
-            </td>
+            `;
 
-            <td>
 
-                <span
-                    class="status ${
-                        completed
-                            ? "completed"
-                            : "pending"
-                    }"
-                >
+            if (
+                doc.signatories &&
+                doc.signatories.length > 0
+            ) {
 
-                    ${
-                        completed
-                            ? "Completed"
-                            : "Pending"
+                doc.signatories.forEach(
+                    person => {
+
+                        signatoriesHTML += `
+
+                            <div
+                                class="person-row"
+                            >
+
+                                <input
+                                    type="checkbox"
+                                    checked
+                                    disabled
+                                >
+
+                                <span
+                                    class="person-name"
+                                >
+                                    ${escapeHTML(
+                                        person.name
+                                    )}
+                                </span>
+
+                                <span
+                                    class="person-time"
+                                >
+                                    ${formatDateTime(
+                                        person.dateTime
+                                    )}
+                                </span>
+
+                            </div>
+
+                        `;
+
                     }
+                );
 
-                </span>
-
-            </td>
-
-            <td>
-                ${
-                    completed
-                        ? "All documents signed"
-                        : "Waiting for signature"
-                }
-            </td>
-
-            <td>
-
-                <button
-                    class="edit-btn"
-                    onclick="editDocument(${doc.id})"
-                >
-                    Edit
-                </button>
-
-                <button
-                    class="delete-btn"
-                    onclick="deleteDocument(${doc.id})"
-                >
-                    Delete
-                </button>
-
-            </td>
-
-        `;
+            }
 
 
-        table.appendChild(row);
 
-    });
+            /* ===== RECEIVED BY HTML ===== */
+
+            let receivedHTML = `
+
+                <div class="people-header">
+
+                    <span></span>
+
+                    <span>NAME</span>
+
+                    <span>DATE & TIME</span>
+
+                </div>
+
+            `;
+
+
+            if (
+                doc.receivedBy &&
+                doc.receivedBy.length > 0
+            ) {
+
+                doc.receivedBy.forEach(
+                    person => {
+
+                        receivedHTML += `
+
+                            <div
+                                class="person-row"
+                            >
+
+                                <input
+                                    type="checkbox"
+                                    checked
+                                    disabled
+                                >
+
+                                <span
+                                    class="person-name"
+                                >
+                                    ${escapeHTML(
+                                        person.name
+                                    )}
+                                </span>
+
+                                <span
+                                    class="person-time"
+                                >
+                                    ${formatDateTime(
+                                        person.dateTime
+                                    )}
+                                </span>
+
+                            </div>
+
+                        `;
+
+                    }
+                );
+
+            }
+
+
+
+            /* ===== REMARK ===== */
+
+            let remarkClass =
+                "pending";
+
+
+            if (
+                doc.remark ===
+                "Completed"
+            ) {
+
+                remarkClass =
+                    "completed";
+
+            }
+
+
+            if (
+                doc.remark ===
+                "For Follow-up"
+            ) {
+
+                remarkClass =
+                    "followup";
+
+            }
+
+
+
+            /* ===== ROW ===== */
+
+            row.innerHTML = `
+
+                <td>
+
+                    ${formatDate(
+                        doc.date
+                    )}
+
+                </td>
+
+
+                <td>
+
+                    <strong>
+
+                        ${escapeHTML(
+                            doc.documentName
+                        )}
+
+                    </strong>
+
+                </td>
+
+
+                <td>
+
+                    ${escapeHTML(
+                        doc.trustedBy
+                    )}
+
+                </td>
+
+
+                <td>
+
+                    ${signatoriesHTML}
+
+                </td>
+
+
+                <td>
+
+                    ${receivedHTML}
+
+                </td>
+
+
+                <td>
+
+                    <span
+                        class="remark
+                        ${remarkClass}"
+                    >
+
+                        ${escapeHTML(
+                            doc.remark
+                        )}
+
+                    </span>
+
+                </td>
+
+
+                <td>
+
+                    <div
+                        class="action-buttons"
+                    >
+
+                        <button
+                            class="edit-btn"
+                            onclick="editDocument(
+                                ${doc.id}
+                            )"
+                        >
+
+                            Edit
+
+                        </button>
+
+
+                        <button
+                            class="delete-btn"
+                            onclick="deleteDocument(
+                                ${doc.id}
+                            )"
+                        >
+
+                            Delete
+
+                        </button>
+
+                    </div>
+
+                </td>
+
+            `;
+
+
+            tableBody.appendChild(row);
+
+        }
+    );
 
 
     updateDashboard();
@@ -378,46 +706,15 @@ function displayDocuments() {
 }
 
 
-/* TOGGLE SIGNATURE */
 
-function toggleSignature(id, name) {
-
-    const doc =
-        documents.find(
-            document => document.id === id
-        );
-
-
-    if (!doc) return;
-
-
-    const person =
-        doc.signatories.find(
-            person => person.name === name
-        );
-
-
-    if (!person) return;
-
-
-    person.signed =
-        !person.signed;
-
-
-    saveData();
-
-    displayDocuments();
-
-}
-
-
-/* EDIT */
+/* ================= EDIT DOCUMENT ================= */
 
 function editDocument(id) {
 
     const doc =
         documents.find(
-            document => document.id === id
+            document =>
+                document.id === id
         );
 
 
@@ -427,84 +724,114 @@ function editDocument(id) {
     editingId = id;
 
 
-    document.getElementById("modalTitle")
-        .textContent =
+    document.getElementById(
+        "modalTitle"
+    ).textContent =
         "Edit Document";
 
 
-    document.getElementById("documentName")
-        .value = doc.name;
+    document.getElementById(
+        "documentDate"
+    ).value =
+        doc.date;
 
 
-    document.getElementById("schoolYear")
-        .value = doc.schoolYear;
+    document.getElementById(
+        "documentName"
+    ).value =
+        doc.documentName;
 
 
-    document.getElementById("semester")
-        .value = doc.semester;
+    document.getElementById(
+        "trustedBy"
+    ).value =
+        doc.trustedBy;
 
 
-    document.getElementById("remarks")
-        .value = doc.remarks;
+    document.getElementById(
+        "remark"
+    ).value =
+        doc.remark;
 
 
-    const container =
-        document.getElementById(
-            "signatoryContainer"
+
+    /* ===== SIGNATORIES ===== */
+
+    document.getElementById(
+        "signatoriesContainer"
+    ).innerHTML = "";
+
+
+    if (
+        doc.signatories &&
+        doc.signatories.length > 0
+    ) {
+
+        doc.signatories.forEach(
+            person => {
+
+                addSignatoryField(
+                    person.name,
+                    person.dateTime,
+                    person.signed
+                );
+
+            }
         );
 
+    }
 
-    container.innerHTML = "";
+    else {
 
+        addSignatoryField();
 
-    doc.signatories.forEach(person => {
-
-        const div =
-            document.createElement("div");
-
-        div.className = "signatory";
+    }
 
 
-        div.innerHTML = `
 
-            <input
-                type="text"
-                class="signatory-name"
-                value="${escapeHTML(person.name)}"
-                required
-            >
+    /* ===== RECEIVED ===== */
 
-            <label class="checkbox-label">
-
-                <input
-                    type="checkbox"
-                    class="signatory-status"
-                    ${
-                        person.signed
-                            ? "checked"
-                            : ""
-                    }
-                >
-
-                Signed
-
-            </label>
-
-        `;
+    document.getElementById(
+        "receivedContainer"
+    ).innerHTML = "";
 
 
-        container.appendChild(div);
+    if (
+        doc.receivedBy &&
+        doc.receivedBy.length > 0
+    ) {
 
-    });
+        doc.receivedBy.forEach(
+            person => {
+
+                addReceivedField(
+                    person.name,
+                    person.dateTime
+                );
+
+            }
+        );
+
+    }
+
+    else {
+
+        addReceivedField();
+
+    }
 
 
-    document.getElementById("documentModal")
-        .style.display = "flex";
+
+    document.getElementById(
+        "documentModal"
+    ).style.display =
+        "flex";
 
 }
 
 
-/* DELETE */
+
+/* ================= DELETE ================= */
 
 function deleteDocument(id) {
 
@@ -514,12 +841,17 @@ function deleteDocument(id) {
         );
 
 
-    if (!confirmDelete) return;
+    if (!confirmDelete) {
+
+        return;
+
+    }
 
 
     documents =
         documents.filter(
-            doc => doc.id !== id
+            doc =>
+                doc.id !== id
         );
 
 
@@ -530,7 +862,8 @@ function deleteDocument(id) {
 }
 
 
-/* DASHBOARD */
+
+/* ================= DASHBOARD ================= */
 
 function updateDashboard() {
 
@@ -539,56 +872,173 @@ function updateDashboard() {
 
 
     const completed =
-        documents.filter(doc =>
-            doc.signatories.every(
-                person => person.signed
-            )
+        documents.filter(
+            doc =>
+                doc.remark ===
+                "Completed"
         ).length;
 
 
     const pending =
-        total - completed;
+        documents.filter(
+            doc =>
+                doc.remark !==
+                "Completed"
+        ).length;
 
 
     document.getElementById(
         "totalDocuments"
-    ).textContent = total;
+    ).textContent =
+        total;
 
 
     document.getElementById(
         "completedDocuments"
-    ).textContent = completed;
+    ).textContent =
+        completed;
 
 
     document.getElementById(
         "pendingDocuments"
-    ).textContent = pending;
+    ).textContent =
+        pending;
 
 }
 
 
-/* SECURITY HELPERS */
 
-function escapeHTML(text) {
+/* ================= FORMAT DATE ================= */
 
-    return String(text)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+function formatDate(date) {
+
+    if (!date) {
+
+        return "";
+
+    }
+
+
+    const parts =
+        date.split("-");
+
+
+    if (parts.length !== 3) {
+
+        return date;
+
+    }
+
+
+    return (
+        parts[1] +
+        "/" +
+        parts[2] +
+        "/" +
+        parts[0]
+    );
 
 }
 
 
-function escapeText(text) {
 
-    return String(text)
-        .replace(/'/g, "\\'");
+/* ================= FORMAT DATE TIME ================= */
+
+function formatDateTime(dateTime) {
+
+    if (!dateTime) {
+
+        return "____________";
+
+    }
+
+
+    const date =
+        new Date(dateTime);
+
+
+    if (isNaN(date.getTime())) {
+
+        return dateTime;
+
+    }
+
+
+    return date.toLocaleString(
+        "en-PH",
+        {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+        }
+    );
 
 }
 
 
-/* INITIAL LOAD */
+
+/* ================= ESCAPE HTML ================= */
+
+function escapeHTML(value) {
+
+    return String(value)
+
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+
+        .replace(
+            /</g,
+            "&lt;"
+        )
+
+        .replace(
+            />/g,
+            "&gt;"
+        )
+
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+
+/* ================= CLOSE MODAL OUTSIDE ================= */
+
+window.addEventListener(
+    "click",
+    function(event) {
+
+        const modal =
+            document.getElementById(
+                "documentModal"
+            );
+
+
+        if (
+            event.target === modal
+        ) {
+
+            closeModal();
+
+        }
+
+    }
+);
+
+
+
+/* ================= INITIALIZE ================= */
 
 displayDocuments();
