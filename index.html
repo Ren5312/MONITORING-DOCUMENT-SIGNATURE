@@ -3,82 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document Signature Monitoring</title>
+
+    <title>Document Monitoring System</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+<!-- ================= HEADER ================= -->
+
 <header class="topbar">
-    <div>
+
+    <div class="title-area">
+
         <h1>Document Signature Monitoring</h1>
-        <p>Monitor documents and their signature status</p>
+
+        <p>
+            Monitoring of documents, signatories, and received documents
+        </p>
+
     </div>
 
-    <button class="add-btn" onclick="openModal()">
+    <button class="add-btn" onclick="openAddModal()">
         + Add Document
     </button>
+
 </header>
+
+
+<!-- ================= MAIN ================= -->
 
 <main class="container">
 
-    <!-- DASHBOARD -->
+
+    <!-- ================= DASHBOARD ================= -->
+
     <section class="dashboard">
 
-        <div class="card">
-            <h3>Total Documents</h3>
-            <strong id="totalDocuments">0</strong>
+        <div class="dashboard-card">
+
+            <span>Total Documents</span>
+
+            <strong id="totalDocuments">
+                0
+            </strong>
+
         </div>
 
-        <div class="card">
-            <h3>Completed</h3>
-            <strong id="completedDocuments">0</strong>
+
+        <div class="dashboard-card">
+
+            <span>Completed</span>
+
+            <strong id="completedDocuments">
+                0
+            </strong>
+
         </div>
 
-        <div class="card">
-            <h3>Pending</h3>
-            <strong id="pendingDocuments">0</strong>
+
+        <div class="dashboard-card">
+
+            <span>Pending</span>
+
+            <strong id="pendingDocuments">
+                0
+            </strong>
+
         </div>
 
     </section>
 
-    <!-- SEARCH -->
-    <section class="toolbar">
+
+
+    <!-- ================= SEARCH ================= -->
+
+    <section class="search-area">
 
         <input
             type="text"
             id="searchInput"
-            placeholder="Search document..."
+            placeholder="Search document name..."
             onkeyup="displayDocuments()"
         >
 
     </section>
 
-    <!-- DOCUMENT TABLE -->
-    <section class="table-container">
 
-        <table>
+
+    <!-- ================= TABLE ================= -->
+
+    <section class="table-wrapper">
+
+        <table id="documentTable">
 
             <thead>
+
                 <tr>
-                    <th>#</th>
-                    <th>Document</th>
-                    <th>School Year</th>
-                    <th>Semester</th>
-                    <th>Signatories</th>
-                    <th>Status</th>
-                    <th>Remarks</th>
-                    <th>Action</th>
+
+                    <th>DATE</th>
+
+                    <th>DOCUMENT NAME</th>
+
+                    <th>TRUSTED BY</th>
+
+                    <th>SIGNATORIES</th>
+
+                    <th>RECEIVED BY</th>
+
+                    <th>REMARK</th>
+
+                    <th>ACTION</th>
+
                 </tr>
+
             </thead>
 
-            <tbody id="documentTable">
+
+            <tbody id="documentTableBody">
+
             </tbody>
 
         </table>
 
-        <div id="emptyMessage" class="empty">
-            No documents found.
+
+        <div
+            id="emptyMessage"
+            class="empty-message"
+        >
+
+            No documents available.
+
         </div>
 
     </section>
@@ -86,115 +142,155 @@
 </main>
 
 
-<!-- ADD / EDIT MODAL -->
 
-<div id="documentModal" class="modal">
+<!-- ================= ADD / EDIT MODAL ================= -->
+
+<div
+    id="documentModal"
+    class="modal"
+>
 
     <div class="modal-content">
 
+
+        <!-- MODAL HEADER -->
+
         <div class="modal-header">
 
-            <h2 id="modalTitle">Add Document</h2>
+            <h2 id="modalTitle">
+                Add Document
+            </h2>
 
-            <button onclick="closeModal()" class="close">
+            <button
+                class="close-btn"
+                onclick="closeModal()"
+            >
                 ×
             </button>
 
         </div>
 
+
+
+        <!-- FORM -->
+
         <form id="documentForm">
 
-            <input type="hidden" id="documentId">
-
-            <label>Document Name</label>
 
             <input
-                type="text"
-                id="documentName"
-                placeholder="Example: Application Form"
+                type="hidden"
+                id="documentId"
+            >
+
+
+
+            <!-- DATE -->
+
+            <label>
+                Date
+            </label>
+
+            <input
+                type="date"
+                id="documentDate"
                 required
             >
 
 
-            <div class="row">
 
-                <div>
-                    <label>School Year</label>
+            <!-- DOCUMENT NAME -->
 
-                    <input
-                        type="text"
-                        id="schoolYear"
-                        placeholder="2026-2027"
-                        required
-                    >
-                </div>
+            <label>
+                Document Name
+            </label>
 
-                <div>
-
-                    <label>Semester</label>
-
-                    <select id="semester">
-
-                        <option value="1st Semester">
-                            1st Semester
-                        </option>
-
-                        <option value="2nd Semester">
-                            2nd Semester
-                        </option>
-
-                        <option value="Summer">
-                            Summer
-                        </option>
-
-                    </select>
-
-                </div>
-
-            </div>
-
-
-            <label>Signatories</label>
-
-            <div id="signatoryContainer">
-
-                <div class="signatory">
-
-                    <input
-                        type="text"
-                        placeholder="Signatory name"
-                        class="signatory-name"
-                        required
-                    >
-
-                    <label class="checkbox-label">
-
-                        <input
-                            type="checkbox"
-                            class="signatory-status"
-                        >
-
-                        Signed
-
-                    </label>
-
-                </div>
-
-            </div>
-
-
-            <button
-                type="button"
-                class="secondary-btn"
-                onclick="addSignatory()"
+            <input
+                type="text"
+                id="documentName"
+                placeholder="Enter document name"
+                required
             >
-                + Add Signatory
-            </button>
 
 
-            <label>Remarks</label>
 
-            <select id="remarks">
+            <!-- TRUSTED BY -->
+
+            <label>
+                Trusted By
+            </label>
+
+            <input
+                type="text"
+                id="trustedBy"
+                placeholder="Enter trusted person"
+                required
+            >
+
+
+
+            <!-- SIGNATORIES -->
+
+            <div class="section-title">
+
+                <h3>
+                    Signatories
+                </h3>
+
+                <button
+                    type="button"
+                    class="small-btn"
+                    onclick="addSignatoryField()"
+                >
+                    + Add
+                </button>
+
+            </div>
+
+
+            <div
+                id="signatoriesContainer"
+                class="people-container"
+            >
+
+            </div>
+
+
+
+            <!-- RECEIVED BY -->
+
+            <div class="section-title">
+
+                <h3>
+                    Received By
+                </h3>
+
+                <button
+                    type="button"
+                    class="small-btn"
+                    onclick="addReceivedField()"
+                >
+                    + Add
+                </button>
+
+            </div>
+
+
+            <div
+                id="receivedContainer"
+                class="people-container"
+            >
+
+            </div>
+
+
+
+            <!-- REMARK -->
+
+            <label>
+                Remark
+            </label>
+
+            <select id="remark">
 
                 <option value="Pending">
                     Pending
@@ -204,10 +300,17 @@
                     Completed
                 </option>
 
+                <option value="For Follow-up">
+                    For Follow-up
+                </option>
+
             </select>
 
 
-            <div class="modal-actions">
+
+            <!-- BUTTONS -->
+
+            <div class="form-buttons">
 
                 <button
                     type="button"
@@ -226,11 +329,13 @@
 
             </div>
 
+
         </form>
 
     </div>
 
 </div>
+
 
 
 <script src="script.js"></script>
